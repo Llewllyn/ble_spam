@@ -1,47 +1,37 @@
-#include "swiftpair.h"
-#include "_protocols.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-// Hacked together by @Willy-JL and @Spooks4576
-// Documentation at https://learn.microsoft.com/en-us/windows-hardware/design/component-guidelines/bluetooth-swift-pair
+#define MAX_NAMES 100 // Maximum number of names to read
+#define MAX_NAME_LENGTH 50 // Maximum length of each name
 
-const char* names[100];  // Adjust the size based on the maximum number of names you expect to read.
-
-// Function to load names from a file
-static int load_names_from_file(const char* filename) {
-    FILE *file = fopen(filename, "r");
+// Function to read names from a file
+static int readNamesFromFile(const char* filename, const char* names[], int* names_count) {
+    FILE* file = fopen(filename, "r");
     if (file == NULL) {
-        printf("Error opening file.");
-        return -1;  // Error opening file
+        printf("Error opening the file.\n");
+        return 1;
     }
 
     int count = 0;
-    while (fgets(names[count], sizeof(names[count]), file)) {
-        names[count][strcspn(names[count], "\n")] = 0; // Remove the newline character
+    char line[MAX_NAME_LENGTH];
+
+    while (fgets(line, sizeof(line), file) && count < MAX_NAMES) {
+        line[strcspn(line, "\n")] = 0; // Removing the newline character if present
+        names[count] = strdup(line); // Store the name in the array
         count++;
     }
 
     fclose(file);
-    return count;  // Return the count of names loaded
-}
-
-// Example usage in your code
-int main() {
-    const char* filename = "bluetooth_names.txt";
-    int count = load_names_from_file(filename);
-
-    if (count > 0) {
-        for (int i = 0; i < count; i++) {
-            printf("%s\n", names[i]);  // Displaying the names (you can use them as needed in your code)
-        }
-    } else {
-        printf("No names loaded.");
-    }
-
+    *names_count = count;
     return 0;
 }
-const uint8_t names_count = COUNT_OF(names);
+
+#include "swiftpair.h"
+#include "_protocols.h"
+
+const char* names[MAX_NAMES];
+int names_count = 0;
 
 static const char* get_name(const Payload* payload) {
     UNUSED(payload);
@@ -52,19 +42,19 @@ static void make_packet(uint8_t* _size, uint8_t** _packet, Payload* payload) {
     SwiftpairCfg* cfg = payload ? &payload->cfg.swiftpair : NULL;
 
     const char* name;
-    switch(cfg ? payload->mode : PayloadModeRandom) {
-    case PayloadModeRandom:
-    default:
-        name = names[rand() % names_count];
-        break;
-    case PayloadModeValue:
-        name = cfg->name;
-        break;
+    switch (cfg ? payload->mode : PayloadModeRandom) {
+        case PayloadModeRandom:
+        default:
+            name = names[rand() % names_count];
+            break;
+        case PayloadModeValue:
+            name = cfg->name;
+            break;
     }
     uint8_t name_len = strlen(name);
 
     uint8_t size = 7 + name_len;
-    uint8_t* packet = malloc(size);
+    uint8_t* packet = (uint8_t*)malloc(size);
     uint8_t i = 0;
 
     packet[i++] = size - 1; // Size
