@@ -4,14 +4,41 @@
 // Hacked together by @Willy-JL and @Spooks4576
 // Documentation at https://learn.microsoft.com/en-us/windows-hardware/design/component-guidelines/bluetooth-swift-pair
 
-const char* names[] = {
-    "Assquach💦",
-    "Flipper 🐬",
-    "iOS 17 🍎",
-    "Kink💦",
-    "👉👌",
-    "🔵🦷",
-};
+const char* names[];  // Adjust the size based on the maximum number of names you expect to read.
+
+// Function to load names from a file
+static int load_names_from_file(const char* filename) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("Error opening file.");
+        return -1;  // Error opening file
+    }
+
+    int count = 0;
+    while (fgets(names[count], sizeof(names[count]), file)) {
+        names[count][strcspn(names[count], "\n")] = 0; // Remove the newline character
+        count++;
+    }
+
+    fclose(file);
+    return count;  // Return the count of names loaded
+}
+
+// Example usage in your code
+int main() {
+    const char* filename = "bluetooth_names.txt";
+    int count = load_names_from_file(filename);
+
+    if (count > 0) {
+        for (int i = 0; i < count; i++) {
+            printf("%s\n", names[i]);  // Displaying the names (you can use them as needed in your code)
+        }
+    } else {
+        printf("No names loaded.");
+    }
+
+    return 0;
+}
 const uint8_t names_count = COUNT_OF(names);
 
 static const char* get_name(const Payload* payload) {
