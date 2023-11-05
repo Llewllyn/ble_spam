@@ -1,5 +1,7 @@
 #include "swiftpair.h"
 #include "_protocols.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 // Hacked together by @Willy-JL and @Spooks4576
 // Documentation at https://learn.microsoft.com/en-us/windows-hardware/design/component-guidelines/bluetooth-swift-pair
