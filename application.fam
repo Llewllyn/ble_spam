@@ -1,6 +1,6 @@
 App(
-    appid="ble_spam",
-    name="BLE Spam",
+    appid="custom_ble_spam",
+    name="Custom BLE Spam",
     apptype=FlipperAppType.EXTERNAL,
     entry_point="ble_spam",
     stack_size=5 * 1024,
