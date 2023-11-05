@@ -1,45 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#define MAX_NAMES 100 // Maximum number of names to read
-#define MAX_NAME_LENGTH 50 // Maximum length of each name
-
-// Function to read names from a file
-static int readNamesFromFile(const char* filename, const char* names[], int* names_count) {
-    FILE* file = fopen(filename, "r");
-    if (file == NULL) {
-        printf("Error opening the file.\n");
-        return 1;
-    }
-
-    int count = 0;
-    char line[MAX_NAME_LENGTH];
-
-    while (fgets(line, sizeof(line), file) && count < MAX_NAMES) {
-        line[strcspn(line, "\n")] = 0; // Removing the newline character if present
-        names[count] = strdup(line); // Store the name in the array
-        count++;
-    }
-
-    fclose(file);
-    *names_count = count;
-    return 0;
-}
-
 #include "swiftpair.h"
 #include "_protocols.h"
 
-const char* names[MAX_NAMES];
-int names_count = 0;
+// Hacked together by @Willy-JL and @Spooks4576
+// Documentation at https://learn.microsoft.com/en-us/windows-hardware/design/component-guidelines/bluetooth-swift-pair
 
-// Function to use the readNamesFromFile function
-void initializeNames() {
-    if (readNamesFromFile("file.txt", names, &names_count) != 0) {
-        // Handle error if required
-        printf("Error reading names from file.\n");
-    }
-}
+const char* names[] = {
+    "🍎 iOS 17",
+    "🔵🦷",
+};
+const uint8_t names_count = COUNT_OF(names);
 
 static const char* get_name(const Payload* payload) {
     UNUSED(payload);
@@ -50,19 +19,19 @@ static void make_packet(uint8_t* _size, uint8_t** _packet, Payload* payload) {
     SwiftpairCfg* cfg = payload ? &payload->cfg.swiftpair : NULL;
 
     const char* name;
-    switch (cfg ? payload->mode : PayloadModeRandom) {
-        case PayloadModeRandom:
-        default:
-            name = names[rand() % names_count];
-            break;
-        case PayloadModeValue:
-            name = cfg->name;
-            break;
+    switch(cfg ? payload->mode : PayloadModeRandom) {
+    case PayloadModeRandom:
+    default:
+        name = names[rand() % names_count];
+        break;
+    case PayloadModeValue:
+        name = cfg->name;
+        break;
     }
     uint8_t name_len = strlen(name);
 
     uint8_t size = 7 + name_len;
-    uint8_t* packet = (uint8_t*)malloc(size);
+    uint8_t* packet = malloc(size);
     uint8_t i = 0;
 
     packet[i++] = size - 1; // Size
