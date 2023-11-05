@@ -6,7 +6,7 @@
 // Hacked together by @Willy-JL and @Spooks4576
 // Documentation at https://learn.microsoft.com/en-us/windows-hardware/design/component-guidelines/bluetooth-swift-pair
 
-const char* names[];  // Adjust the size based on the maximum number of names you expect to read.
+const char* names[100];  // Adjust the size based on the maximum number of names you expect to read.
 
 // Function to load names from a file
 static int load_names_from_file(const char* filename) {
