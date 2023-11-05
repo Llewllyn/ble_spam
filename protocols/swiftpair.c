@@ -33,6 +33,14 @@ static int readNamesFromFile(const char* filename, const char* names[], int* nam
 const char* names[MAX_NAMES];
 int names_count = 0;
 
+// Function to use the readNamesFromFile function
+void initializeNames() {
+    if (readNamesFromFile("file.txt", names, &names_count) != 0) {
+        // Handle error if required
+        printf("Error reading names from file.\n");
+    }
+}
+
 static const char* get_name(const Payload* payload) {
     UNUSED(payload);
     return "SwiftPair";
